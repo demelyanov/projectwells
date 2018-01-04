@@ -1,6 +1,6 @@
 using System;
 
-namespace Status.Models
+namespace status.web.Models
 {
     public class ErrorViewModel
     {
