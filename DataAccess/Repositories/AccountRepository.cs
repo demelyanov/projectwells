@@ -1,4 +1,5 @@
-﻿using status.domain.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using status.domain.Interfaces;
 using status.domain.Model;
 using System;
 using System.Collections.Generic;
@@ -19,7 +20,7 @@ namespace status.dataaccess.Repositories
 
         public User Authenticate(string username, string password)
         {
-            return _context.Users.Where(u => u.Username == username && u.Password == password).SingleOrDefault();
+            return _context.Users.Include(u=>u.Role).Include(u=>u.Project).Where(u => u.Username == username && u.Password == password).SingleOrDefault();
         }
     }
 }

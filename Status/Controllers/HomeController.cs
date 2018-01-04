@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using status.domain.Interfaces;
 using status.web.Models;
 
 namespace status.web.Controllers
@@ -12,25 +13,18 @@ namespace status.web.Controllers
     [Authorize]
     public class HomeController : Controller
     {
-        public IActionResult Index()
-        {
-            return View();
+        private readonly IProjectRepository _projectRepository;
+        public HomeController(IProjectRepository projectRepository) {
+            _projectRepository = projectRepositoryж
         }
 
-        public IActionResult About()
+        public IActionResult Index(int? id)
         {
-            ViewData["Message"] = "Your application description page.";
-
-            return View();
-        }
-
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
 
             return View();
         }
 
+        
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

@@ -1,8 +1,35 @@
-﻿
+﻿@model LoginViewModel
+
 @{
     ViewData["Title"] = "Login";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Login</h2>
-
+<div class="container">
+    ​<div class="login-page">
+        <div class="form">
+            <img src="~/images/Xbox_One_logo.png" style="width: 270px;"/>
+            @if (Model.NotFound)
+            {
+                <div class="alert alert-danger" id="not-found">
+                    The User Name or Password is Incorrect
+                </div>
+            }
+            @if (Model.NoProject)
+            {
+                <div class="alert alert-info" id="no-project">
+                    The project not found.
+                </div>
+            }
+            <form class="login-form" action="/account/login?returnUrl=@Model.ReturnUrl" method="post">
+                @Html.TextBoxFor(m => m.Username, new { placeholder = "username" })
+                <span asp-validation-for="Username" class="text-danger login-danger"></span>
+                @Html.PasswordFor(m => m.Password, new { placeholder = "password" })
+                <span asp-validation-for="Password" class="text-danger login-danger"></span>
+                <button id="btn-login">log in</button>
+            </form>
+        </div>
+    </div>
+</div> <!-- /container -->
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}
