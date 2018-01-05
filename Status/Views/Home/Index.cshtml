@@ -3,3 +3,75 @@
     ViewData["Title"] = "Home Page";
 }
 
+<div class="row">
+    <div class="col-12">
+        <h2>Project: @Model.Project.Name</h2>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
+        <h3>
+            <i class=" glyphicon glyphicon-menu-right info-menu" id="wells-menu" role="button" data-toggle="collapse" href="#collapseWells"
+               aria-expanded="false" aria-controls="collapseWells"></i> Wells: @Model.Project.Wells.Count
+        </h3>
+    </div>
+    <div class="collapse" id="collapseWells">
+        <div class="well">
+            <ul class="list-group">
+                @foreach (var item in Model.Project.Wells)
+                {
+                    <li class="list-group-item info-menu" role="button" data-toggle="collapse" href="#collapseStages@(item.Id)"
+               aria-expanded="false" aria-controls="collapseStages@(item.Id)">
+                        <i class=" glyphicon glyphicon-menu-right " ></i> @item.Name <span class="badge">Stages: @item.Stages.Count</span>
+                        <div class="collapse" id="collapseStages@(item.Id)">
+                            <ul class="list-group">
+                                @foreach (var stage in item.Stages)
+                                {
+                                    <li class="list-group-item list-group-item-info">@stage.Name <span class="badge">Activities: 0</span></li>
+                                }
+                            </ul>
+                        </div>
+                </li>
+            }
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+
+        $(document).ready(function () {
+
+            $('#wells-menu').click(function () {
+
+                if ($(this).hasClass('glyphicon-menu-right')) {
+                    $(this).removeClass('glyphicon-menu-right');
+                    $(this).addClass('glyphicon-menu-down');
+                } else {
+
+                    $(this).removeClass('glyphicon-menu-down');
+                    $(this).addClass('glyphicon-menu-right');
+                }
+
+            });
+
+
+            $('.info-menu').click(function () {
+                var menuSign = $(this).find('i');
+                console.log(menuSign);
+                if (menuSign.hasClass('glyphicon-menu-right')) {
+                    menuSign.removeClass('glyphicon-menu-right');
+                    menuSign.addClass('glyphicon-menu-down');
+                } else {
+
+                    menuSign.removeClass('glyphicon-menu-down');
+                    menuSign.addClass('glyphicon-menu-right');
+                }
+
+            });
+        });
+
+    </script>
+
+}

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using status.dataaccess;
 using status.dataaccess.Repositories;
 using status.domain.Interfaces;
+using status.web.Infrastructure;
 
 namespace status.web
 {
@@ -52,6 +54,8 @@ namespace status.web
 
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
+
+            services.AddAutoMapper(x => x.AddProfile(new AutoMapperProfile()));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

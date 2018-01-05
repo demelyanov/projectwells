@@ -41,3 +41,7 @@
     padding-top: 15px;
     padding-bottom: 15px;
 }
+
+.info-menu {
+    cursor: pointer;
+}
