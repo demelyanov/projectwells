@@ -8,8 +8,12 @@ namespace status.domain.Model
     {
         public int Id { get; set; }
         public int ProjectId { get; set; }
+        public Project Project { get; set; }
         public int WellId { get; set; }
+        public Well Well { get; set; }
         public int StageId { get; set; }
+        public Stage Stage { get; set; }
+
         public string Picker { get; set; }
         public string Folder { get; set; }
         public string CutEvent { get; set; }

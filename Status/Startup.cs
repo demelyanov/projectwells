@@ -55,6 +55,7 @@ namespace status.web
             services.AddScoped<IAccountRepository, AccountRepository>();
             services.AddScoped<IProjectRepository, ProjectRepository>();
             services.AddScoped<IPickingPersonRepository, PickingPersonRepository>();
+            services.AddScoped<IWellRepository, WellRepository>();
 
             services.AddAutoMapper(x => x.AddProfile(new AutoMapperProfile()));
         }

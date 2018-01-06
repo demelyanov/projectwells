@@ -20,11 +20,14 @@ namespace status.web.Controllers
     {
         private readonly IProjectRepository _projectRepository;
         private readonly IPickingPersonRepository _pickingPersonRepository;
+        private readonly IWellRepository _wellRepository;
         private readonly IMapper _mapper;
-        public HomeController(IProjectRepository projectRepository, IPickingPersonRepository pickingPersonRepository, IMapper mapper)
+        public HomeController(IProjectRepository projectRepository, IPickingPersonRepository pickingPersonRepository,
+                                IWellRepository wellRepository, IMapper mapper)
         {
             _projectRepository = projectRepository;
             _pickingPersonRepository = pickingPersonRepository;
+            _wellRepository = wellRepository;
             _mapper = mapper;
         }
 
@@ -90,6 +93,22 @@ namespace status.web.Controllers
             }).OrderBy(r=>r.Date).ToList();
 
             return Json(grouped);
+        }
+
+        public IActionResult _loadWellData(IList<int> ids) {
+
+            var itemsDb = _pickingPersonRepository.ListByWells(ids);
+
+            // add role check
+
+            /*wellsDb.ToList().ForEach(x => x.Stages.ToList().ForEach(s=>s.PickingPersons.ToList().ForEach(p=> {
+                p.Picker = null;
+            })));*/
+
+            var items = _mapper.Map<IList<PickingPersonItemModel>>(itemsDb);
+
+
+            return Json(items);
         }
 
         public IActionResult Error()

@@ -4,12 +4,12 @@
 }
 
 <div class="row">
-    <div class="col-12">
+    <div class="col-md-12">
         <h2>Project: @Model.Project.Name</h2>
     </div>
 </div>
 <div class="row">
-    <div class="col-12">
+    <div class="col-md-12">
         <h3>
             <i class=" glyphicon glyphicon-menu-right info-menu" id="wells-menu" role="button" data-toggle="collapse" href="#collapseWells"
                aria-expanded="false" aria-controls="collapseWells"></i> Wells: @Model.Project.Wells.Count
@@ -106,20 +106,24 @@
         </div>
     </div>
 </div>
-<!-- p1 charts -->
-<div class="row">
-    <div class="col-md-12">
-        @foreach (var well in Model.WellPies)
-        {
+<div class="panel panel-default">
+    <div class="panel-heading">Wells</div>
+    <div class="panel-body">
+        <!-- p1 charts -->
+        <div class="row">
+            <div class="col-md-12">
+                @foreach (var well in Model.WellPies)
+                {
 
-            <div class="col-md-4 text-center">
-                <div id="wellPieChart@(well.Id)" style="height:300px; width: 300px;margin: 0 auto;" class="well-pie"></div>
-                <div class="text-center">@well.Name</div>
+                    <div class="col-md-4 text-center">
+                        <div id="wellPieChart@(well.Id)" style="height:300px; width: 300px;margin: 0 auto;" class="well-pie"></div>
+                        <div class="text-center">@well.Name</div>
+                    </div>
+                }
             </div>
-        }
+        </div>
     </div>
 </div>
-
 <!-- p2. picker stat -->
 <div class="row">
     <div class="col-md-12">
@@ -131,6 +135,47 @@
         <div id="pickerChart" style="height:300px"></div>
     </div>
 </div>
+
+<!-- p3 tableview -->
+
+<div class="panel panel-default">
+    <div class="panel-heading">Picker Info</div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-12 p-3-form-bottom">
+                <div class="form-group">
+                    <label class="control-label col-md-1" for="wallStat">Well</label>
+                    <div class="col-md-5">
+                        <select class="form-control" name="states[]" id="wallStat" multiple="multiple">
+                            @foreach (var well in Model.Project.Wells.OrderBy(w => w.Name))
+                            {
+                                <option value="@well.Id">@well.Name</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-12" id="pickerTableView" style="display: none;">
+                <div class="row table-view-header">
+                    <div class="col-md-1">Well</div>
+                    <div class="col-md-1">Stage</div>
+                    <div class="col-md-2">Folder</div>
+                    <div class="col-md-2">Cut Event</div>
+                    <div class="col-md-2">Picked Event</div>
+                    <div class="col-md-2">Deleted Event</div>
+                    <div class="col-md-1">Date</div>
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <div class="col-md-1">Picker</div>
+                    }
+                </div>
+                <div id="pickingView"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @section scripts{
     <script src="~/js/jquery.flot.min.js"></script>
@@ -237,6 +282,38 @@
                     }
                 };
             });
+
+            /* p3 chart */
+            $('#wallStat').select2({
+                placeholder: 'Select a well'
+            });
+
+            $('#wallStat').on('change.select2', function () {
+                var dataSrc = $(this).select2('data');
+
+                if (0 == dataSrc.length) {
+                    // hide table
+                    $('#pickerTableView').hide();
+                    return;
+                }
+
+                var idArr = [];
+                $.each(dataSrc, function (indx, el) {
+                    idArr.push(el.id);
+                });
+                $.ajax({
+                    url: '/home/_loadWellData',
+                    method: 'post',
+                    data: { ids: idArr },
+                    success: function (result) {
+                        fillPickingView(result);
+                    },
+                    error: function () {
+                        console.log('error');
+                    }
+                });
+
+            });
         });
 
 
@@ -248,18 +325,20 @@
                 method: 'post',
                 data: { picker: picker, project: @Model.Project.Id },
                 success: function (result) {
-                    console.log('loading');
                     if (0 == result.length) {
                         console.log('not found');
                     } else {
                         var pickerData = [];
 
-                        var point0 = [];
-                        var monthDate = new Date(result[0].date);
 
-                        point0.push(gd(monthDate.getFullYear(), monthDate.getMonth(), 1));
-                        point0.push(0);
-                        pickerData.push(point0);
+                        if (1 == result.length) {
+                            var point0 = [];
+                            var monthDate = new Date(result[0].date);
+
+                            point0.push(gd(monthDate.getFullYear(), monthDate.getMonth(), 1));
+                            point0.push(0);
+                            pickerData.push(point0);
+                        }
 
                         $.each(result, function (indx, el) {
                             var point = [];
@@ -267,19 +346,8 @@
                             console.log(bDate);
                             point.push(gd(bDate.getFullYear(), bDate.getMonth(), bDate.getDate()));
                             point.push(el.count);
-
-
-                            /* debug */
-                           /* var point2 = [];
-                            bDate.setDate(bDate.getDate() + 10);
-                            console.log(bDate)
-                            console.log(bDate.getDate())
-                            console.log('debug point');
-                            point2.push(gd(bDate.getFullYear(), bDate.getMonth(), bDate.getDate()));
-                            point2.push(1);*/
-
                             pickerData.push(point);
-                            //pickerData.push(point2);
+
                         });
                         var maxXTick = new Date(result[result.length - 1].date);
                         console.log(pickerData);
@@ -334,8 +402,44 @@
         function gd(year, month, day) {
             console.log('day in gd');
             console.log(day);
-            
+
             return new Date(year, month, day).getTime();
+        }
+
+        function fillPickingView(source) {
+            var root = $('#pickingView');
+            root.empty();
+            if (0 == source.length) {
+                $('#pickerTableView').hide();
+            }
+            $('#pickerTableView').show();
+            $.each(source, function (indx, el) {
+
+                var row = '<div class="row table-view-row ';
+                if (0 == indx % 2) {
+                    row += 'gray-row">';
+                } else {
+                    row += '">';
+                }
+                row += '<div class="col-md-1">' + el.wellName + '</div>';
+                row += '<div class="col-md-1">' + el.stageName + '</div>';
+                row += '<div class="col-md-2">' + el.folder + '</div>';
+                row += '<div class="col-md-2">' + (null == el.cutEvent ? "" : el.cutEvent ) + '</div>';
+                row += '<div class="col-md-2">' + (null == el.pickedEvent ? "" : el.pickedEvent) + '</div>';
+                row += '<div class="col-md-2">' + (null == el.deletedEvent ? "" : el.deletedEvent) + '</div>';
+                row += '<div class="col-md-1">' + moment(el.eventDate).format('MM/DD/YYYY') + '</div>';
+                @if (User.IsInRole("Administrator"))
+                {
+                    <text>
+                row += '<div class="col-md-1">' + el.picker+ '</div>'
+                    </text>
+                }
+                row += '</div>';
+                root.append(row);
+
+            });
+            //root.append('<div class="row"><div>Yahooo</div></div>');
+
         }
 
     </script>

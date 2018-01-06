@@ -1,6 +1,7 @@
 ﻿body {
     padding-top: 50px;
     padding-bottom: 20px;
+    font-size: 12px;
 }
 
 /* Wrapping element */
@@ -53,4 +54,25 @@
 .badge-percentage {
     background-color: transparent!important;
     color: #000;
+}
+
+.p-3-form-bottom {
+    margin-bottom: 25px;
+}
+
+.table-view-header {
+    line-height: 30px;
+    font-weight: bold;
+    border-bottom: 1px solid #000;
+}
+
+.table-view-row {
+    line-height: 20px;
+}
+
+.gray-row {
+    background-color: #f9f9f9;
+}
+.nav-brand-logo {
+    height: 50px;
 }

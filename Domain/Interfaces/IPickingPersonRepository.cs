@@ -9,5 +9,6 @@ namespace status.domain.Interfaces
     {
         IList<PickingPerson> ListByStage(int stageId);
         IList<PickingPerson> ListByPicker(string picker, int projectId);
+        IList<PickingPerson> ListByWells(IList<int> ids);
     }
 }

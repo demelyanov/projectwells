@@ -15,5 +15,8 @@ namespace status.web.Models
         public string Folder { get; set; }
         public string Picker { get; set; }
 
+        public string WellName { get; set; }
+        public string StageName { get; set; }
+
     }
 }
