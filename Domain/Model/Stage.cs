@@ -10,5 +10,7 @@ namespace status.domain.Model
         public int WellId { get; set; }
         public string Name { get; set; }
         public int FilesCount { get; set; }
+
+        public IList<PickingPerson> PickingPersons { get; set; }
     }
 }

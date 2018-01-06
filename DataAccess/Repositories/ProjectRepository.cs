@@ -19,7 +19,7 @@ namespace status.dataaccess.Repositories
 
         public Project GetByUserId(int userId)
         {
-            return _context.Projects.Include(p => p.Wells).ThenInclude(x=>x.Stages).Where(p => p.UserId == userId).SingleOrDefault();
+            return  _context.Projects.Include(p => p.Wells).ThenInclude(x => x.Stages).ThenInclude(x=>x.PickingPersons).Where(p => p.UserId == userId).SingleOrDefault();
         }
     }
 }

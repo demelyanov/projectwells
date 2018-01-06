@@ -45,3 +45,12 @@
 .info-menu {
     cursor: pointer;
 }
+
+.files-info {
+    background-color: #fff;
+}
+
+.badge-percentage {
+    background-color: transparent!important;
+    color: #000;
+}

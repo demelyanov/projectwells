@@ -18,27 +18,124 @@
     <div class="collapse" id="collapseWells">
         <div class="well">
             <ul class="list-group">
-                @foreach (var item in Model.Project.Wells)
+                @foreach (var item in Model.Project.Wells.OrderBy(w => w.Name))
                 {
                     <li class="list-group-item info-menu" role="button" data-toggle="collapse" href="#collapseStages@(item.Id)"
-               aria-expanded="false" aria-controls="collapseStages@(item.Id)">
-                        <i class=" glyphicon glyphicon-menu-right " ></i> @item.Name <span class="badge">Stages: @item.Stages.Count</span>
+                        aria-expanded="false" aria-controls="collapseStages@(item.Id)">
+                        <i class=" glyphicon glyphicon-menu-right well-item"></i> @item.Name <span class="badge">Stages: @item.Stages.Count</span>
+
+                        @{
+
+                            var wellFiles = (decimal)item.Stages.Sum(s => s.FilesCount);
+                            var pickingFiles = (decimal)item.Stages.Sum(s => s.PickingPersons.Count);
+
+                        }
+
+                        <span class="badge badge-percentage">@((pickingFiles * 100) / wellFiles)% complete</span>
+
                         <div class="collapse" id="collapseStages@(item.Id)">
                             <ul class="list-group">
-                                @foreach (var stage in item.Stages)
+                                @foreach (var stage in item.Stages.OrderBy(s => s.Name))
                                 {
-                                    <li class="list-group-item list-group-item-info activities-menu">@stage.Name <span class="badge">Files: @stage.FilesCount</span></li>
+                                    <li class="list-group-item list-group-item-info files-menu" stage-id="@stage.Id"
+                                        data-toggle="collapse" href="#collapseFiles@(stage.Id)" aria-expanded="false" aria-controls="collapseFiles@(stage.Id)">
+                                        <i class=" glyphicon glyphicon-menu-right stage-item"></i>
+                                        @stage.Name <span class="badge">Files: @stage.FilesCount</span>
+
+                                        <div class="collapse" id="collapseFiles@(stage.Id)">
+                                            <div class="row files-info">
+                                                <div class="col-md-12">
+                                                    <div class="col-md-3">Folder</div>
+                                                    <div class="col-md-3">Event</div>
+                                                    <div class="col-md-3">Date</div>
+                                                    @if (User.IsInRole("Administrator"))
+                                                    {
+                                                        <div class="col-md-3">Picker</div>
+                                                    }
+                                                </div>
+                                                @if (0 != stage.PickingPersons.Where(p => p.CutEvent != null).Count())
+                                                {
+                                                    <div class="col-md-12 alert-success text-center">Cut Event</div>
+                                                    @foreach (var cutItem in stage.PickingPersons.Where(p => p.CutEvent != null).OrderByDescending(p => p.EventDate))
+                                                    {
+                                                        <div class="col-md-12">
+                                                            <div class="col-md-3">@cutItem.Folder</div>
+                                                            <div class="col-md-3">@cutItem.CutEvent</div>
+                                                            <div class="col-md-3">@cutItem.EventDate</div>
+                                                            <!-- div class="col-3"></div -->
+                                                        </div>
+                                                    }
+                                                }
+                                                @if (0 != stage.PickingPersons.Where(p => p.PickedEvent != null).Count())
+                                                {
+                                                    <div class="col-md-12 alert-warning text-center">Picked Event</div>
+                                                    @foreach (var pickedItem in stage.PickingPersons.Where(p => p.PickedEvent != null).OrderByDescending(p => p.EventDate))
+                                                    {
+                                                        <div class="col-md-12">
+                                                            <div class="col-md-3">@pickedItem.Folder</div>
+                                                            <div class="col-md-3">@pickedItem.PickedEvent</div>
+                                                            <div class="col-md-3">@pickedItem.EventDate</div>
+                                                            <!-- div class="col-3"></div -->
+                                                        </div>
+                                                    }
+                                                }
+
+                                                @if (0 != stage.PickingPersons.Where(p => p.DeletedEvent != null).Count())
+                                                {
+                                                    <div class="col-md-12 alert-danger text-center">Deleted Event</div>
+                                                    @foreach (var deletedItem in stage.PickingPersons.Where(p => p.DeletedEvent != null).OrderByDescending(p => p.EventDate))
+                                                    {
+                                                        <div class="col-md-12">
+                                                            <div class="col-md-3">@deletedItem.Folder</div>
+                                                            <div class="col-md-3">@deletedItem.DeletedEvent</div>
+                                                            <div class="col-md-3">@deletedItem.EventDate</div>
+                                                            <!-- div class="col-3"></div -->
+                                                        </div>
+                                                    }
+                                                }
+
+                                            </div>
+                                        </div>
+                                    </li>
                                 }
                             </ul>
                         </div>
-                </li>
-            }
+                    </li>
+                }
             </ul>
         </div>
     </div>
 </div>
+<!-- p1 charts -->
+<div class="row">
+    <div class="col-md-12">
+        @foreach (var well in Model.WellPies)
+        {
+
+            <div class="col-md-4 text-center">
+                <div id="wellPieChart@(well.Id)" style="height:300px; width: 300px;margin: 0 auto;" class="well-pie"></div>
+                <div class="text-center">@well.Name</div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- p2. picker stat -->
+<div class="row">
+    <div class="col-md-12">
+        <form onsubmit="return false;">
+            <input id="pickerName" class="form-control" placeholder="picker name" />
+        </form>
+    </div>
+    <div class="col-md-12">
+        <div id="pickerChart" style="height:300px"></div>
+    </div>
+</div>
 
 @section scripts{
+    <script src="~/js/jquery.flot.min.js"></script>
+    <script src="~/js/jquery.flot.pie.min.js"></script>
+    <script src="~/js/jquery.flot.time.min.js"></script>
     <script>
 
         $(document).ready(function () {
@@ -58,7 +155,7 @@
 
 
             $('.info-menu').click(function () {
-                var menuSign = $(this).find('i');
+                var menuSign = $(this).find('i.well-item');
                 if (menuSign.hasClass('glyphicon-menu-right')) {
                     menuSign.removeClass('glyphicon-menu-right');
                     menuSign.addClass('glyphicon-menu-down');
@@ -70,10 +167,176 @@
 
             });
 
-            $('.activities-menu').click(function (e) {
+            $('.files-menu').click(function (e) {
+
+                var stage_id = $(this).attr('stage-id');
+
+                var tableElm = $('#collapseFiles' + stage_id);
+                if (tableElm.hasClass('in')) {
+                    tableElm.removeClass('in');
+                } else {
+                    tableElm.addClass('in');
+                }
+
+                var stageSign = $(this).find('i.stage-item');
+                if (stageSign.hasClass('glyphicon-menu-right')) {
+                    stageSign.removeClass('glyphicon-menu-right');
+                    stageSign.addClass('glyphicon-menu-down');
+                } else {
+
+                    stageSign.removeClass('glyphicon-menu-down');
+                    stageSign.addClass('glyphicon-menu-right');
+                }
+
                 return false;
             });
+
+
+            /* p1 charts */
+            var pies = [@(string.Join(',', Model.WellPies.Select(w=>w.Id.ToString()).ToArray<string>()))];
+            var dataArr = [@Html.Raw(string.Join(',', Model.WellPies.Select(w => w.Data).ToArray()))];
+
+            $.each(pies, function (indx, el) {
+                $.plot('#wellPieChart' + el, dataArr[indx], {
+                    series: {
+                        pie: {
+                            show: true,
+                            radius: 1,
+                            label: {
+                                show: true,
+                                radius: 3 / 5,
+                                formatter: function (label, series) {
+                                    var percent = Math.round(series.percent);
+                                    return label;
+                                }
+                            }
+
+                        }
+                    },
+                    legend: {
+                        show: false
+                    }
+                });
+            });
+
+            /* p2. chart */
+            $("#pickerName").focus(function () {
+                $(this).addClass("hasfocus");
+            });
+
+            $("#pickerName").blur(function () {
+                $(this).removeClass("hasfocus");
+            });
+
+            $('#pickerName').keyup(function (ev) {
+                // 13 is ENTER
+                if (ev.which == 13 && $("#pickerName").hasClass("hasfocus")) {
+                    if (0 < $("#pickerName").val().length) {
+                        console.log('loading data');
+                        loadPickerData($("#pickerName").val());
+                    }
+                };
+            });
         });
+
+
+
+
+        function loadPickerData(picker) {
+            $.ajax({
+                url: '/home/_loadPickerData',
+                method: 'post',
+                data: { picker: picker, project: @Model.Project.Id },
+                success: function (result) {
+                    console.log('loading');
+                    if (0 == result.length) {
+                        console.log('not found');
+                    } else {
+                        var pickerData = [];
+
+                        var point0 = [];
+                        var monthDate = new Date(result[0].date);
+
+                        point0.push(gd(monthDate.getFullYear(), monthDate.getMonth(), 1));
+                        point0.push(0);
+                        pickerData.push(point0);
+
+                        $.each(result, function (indx, el) {
+                            var point = [];
+                            var bDate = new Date(el.date);
+                            console.log(bDate);
+                            point.push(gd(bDate.getFullYear(), bDate.getMonth(), bDate.getDate()));
+                            point.push(el.count);
+
+
+                            /* debug */
+                           /* var point2 = [];
+                            bDate.setDate(bDate.getDate() + 10);
+                            console.log(bDate)
+                            console.log(bDate.getDate())
+                            console.log('debug point');
+                            point2.push(gd(bDate.getFullYear(), bDate.getMonth(), bDate.getDate()));
+                            point2.push(1);*/
+
+                            pickerData.push(point);
+                            //pickerData.push(point2);
+                        });
+                        var maxXTick = new Date(result[result.length - 1].date);
+                        console.log(pickerData);
+                        showChart(pickerData); //, gd(maxXTick.getFullYear(), maxXTick.getMonth(), maxXTick.getDay()));
+                    }
+                },
+                error: function () {
+                    console.log('error');
+                }
+            });
+        }
+
+        function showChart(pickerData) {
+            var plot = $.plot($("#pickerChart"),
+                [{ data: pickerData, label: "Picked Files" }], {
+                    series: {
+                        lines: {
+                            show: true,
+                            lineWidth: 2,
+                            fill: true, fillColor: { colors: [{ opacity: 0.5 }, { opacity: 0.2 }] }
+                        },
+                        points: {
+                            show: true,
+                            lineWidth: 1
+                        },
+                        shadowSize: 0
+                    },
+                    grid: {
+                        hoverable: true,
+                        clickable: true,
+                        tickColor: "#f9f9f9",
+                        borderWidth: 0
+                    },
+                    colors: ["#3B5998"],
+                    xaxis: {
+                        mode: "time",
+                        tickSize: [1, "day"],
+                        tickLength: 1,
+                        axisLabel: "dfsdfsd",
+                        axisLabelUseCanvas: true,
+                        axisLabelFontSizePixels: 12,
+                        axisLabelFontFamily: 'Verdana, Arial',
+                        axisLabelPadding: 10
+
+                        //max: maxXTick
+                    },
+
+                    yaxis: { ticks: 3, tickDecimals: 0 },
+                });
+        }
+
+        function gd(year, month, day) {
+            console.log('day in gd');
+            console.log(day);
+            
+            return new Date(year, month, day).getTime();
+        }
 
     </script>
 

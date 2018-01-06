@@ -9,5 +9,7 @@ namespace status.web.ViewModels
     public class DashboardViewModel
     {
         public ProjectModel Project { get; set; } 
+
+        public IList<WellPieModel> WellPies { get; set; }
     }
 }

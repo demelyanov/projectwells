@@ -5,12 +5,11 @@ using System.Threading.Tasks;
 
 namespace status.web.Models
 {
-    public class StageModel
+    public class WellPieModel
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public int FilesCount { get; set; }
-
-        public IList<PickingPersonItemModel> PickingPersons { get; set; }
+        public string Data { get; set; }
+        
     }
 }
