@@ -106,15 +106,25 @@
         </div>
     </div>
 </div>
-<div class="panel panel-default">
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="btn-group" role="group" aria-label="...">
+            <button type="button" chart-panel="#p1panel" class="btn btn-default active">Pies</button>
+            <button type="button" chart-panel="#p3panel" class="btn btn-default">Picking Stats</button>
+            <button type="button" chart-panel="#p2panel" class="btn btn-default">Picker Info</button>
+        </div>
+    </div>
+</div>
+<br />
+<!-- p1 charts -->
+<div class="panel panel-default" id="p1panel">
     <div class="panel-heading">Wells</div>
     <div class="panel-body">
-        <!-- p1 charts -->
         <div class="row">
             <div class="col-md-12">
                 @foreach (var well in Model.WellPies)
                 {
-
                     <div class="col-md-4 text-center">
                         <div id="wellPieChart@(well.Id)" style="height:300px; width: 300px;margin: 0 auto;" class="well-pie"></div>
                         <div class="text-center">@well.Name</div>
@@ -124,29 +134,36 @@
         </div>
     </div>
 </div>
+
 <!-- p2. picker stat -->
-<div class="row">
-    <div class="col-md-12">
-        <form onsubmit="return false;">
-            <input id="pickerName" class="form-control" placeholder="picker name" />
-        </form>
-    </div>
-    <div class="col-md-12">
-        <div id="pickerChart" style="height:300px"></div>
+<div class="panel panel-default" id="p2panel" style="display: none;">
+    <div class="panel-heading">Picker Info</div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-12">
+                <form onsubmit="return false;">
+                    <input id="pickerName" class="form-control" placeholder="picker name" />
+                </form>
+            </div>
+            <div class="col-md-12" id="chartPlaceholder" style="display: none;">
+                <div id="pickerChart" style="height:300px"></div>
+            </div>
+        </div>
     </div>
 </div>
 
+
 <!-- p3 tableview -->
 
-<div class="panel panel-default">
-    <div class="panel-heading">Picker Info</div>
+<div class="panel panel-default" id="p3panel" style="display: none;">
+    <div class="panel-heading">Picking Stats</div>
     <div class="panel-body">
         <div class="row">
             <div class="col-md-12 p-3-form-bottom">
                 <div class="form-group">
-                    <label class="control-label col-md-1" for="wallStat">Well</label>
+                    <label class="control-label col-md-1" style="line-height: 32px;" for="wallStat">Well</label>
                     <div class="col-md-5">
-                        <select class="form-control" name="states[]" id="wallStat" multiple="multiple">
+                        <select class="form-control" name="states[]" id="wallStat" multiple="multiple" style="width: 300px;">
                             @foreach (var well in Model.Project.Wells.OrderBy(w => w.Name))
                             {
                                 <option value="@well.Id">@well.Name</option>
@@ -314,6 +331,15 @@
                 });
 
             });
+
+
+            /* buttons */
+            $('.btn-group > button').click(function () {
+                $('.btn-group > button').removeClass('active');
+                $('.panel.panel-default').hide();
+                var panelId = $(this).attr('chart-panel');
+                $(panelId).show();
+            });
         });
 
 
@@ -327,9 +353,10 @@
                 success: function (result) {
                     if (0 == result.length) {
                         console.log('not found');
+                        $('#chartPlaceholder').hide();
                     } else {
                         var pickerData = [];
-
+                        $('#chartPlaceholder').show();
 
                         if (1 == result.length) {
                             var point0 = [];
