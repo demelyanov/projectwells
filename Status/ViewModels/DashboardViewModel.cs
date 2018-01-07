@@ -11,5 +11,9 @@ namespace status.web.ViewModels
         public ProjectModel Project { get; set; } 
 
         public IList<WellPieModel> WellPies { get; set; }
+
+        public IList<ProjectModel> ProjectsList { get; set; }
+
+        public DateTime StartDate { get; set; }
     }
 }

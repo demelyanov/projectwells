@@ -31,20 +31,39 @@ namespace status.web.Controllers
             _mapper = mapper;
         }
 
-        public IActionResult Index(int? id)
+        public IActionResult Index(int? projects)
         {
             var userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier);
             if (null == userId)
                 return RedirectToAction("logoff", "account");
 
-            var projectDb = _projectRepository.GetByUserId(Convert.ToInt32(userId.Value));
+            int projectId = 0;
+
+
+            IList<ProjectModel> projectsList = null;
+            if (User.IsInRole("Administrator"))
+            {
+                projectsList = _mapper.Map<IList<ProjectModel>>(_projectRepository.ListAll());
+                if (projects.HasValue)
+                {
+                    projectId = projects.Value;
+                }
+                else
+                    projectId = projectsList.FirstOrDefault().Id;
+            }
+            else
+                projectId = Convert.ToInt32(userId.Value);
+
+            var projectDb = _projectRepository.GetByUserId(projectId);
 
             if (null == projectDb)
                 return RedirectToAction("logoff", "account");
 
             var model = new DashboardViewModel
             {
-                Project = _mapper.Map<ProjectModel>(projectDb)
+                Project = _mapper.Map<ProjectModel>(projectDb),
+                ProjectsList = projectsList,
+                StartDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1)
             };
 
             model.WellPies = generatePieData(model.Project.Wells);
@@ -87,26 +106,25 @@ namespace status.web.Controllers
         {
             var pickerActivitiesDb = _pickingPersonRepository.ListByPicker(picker, project);
 
-            var grouped = pickerActivitiesDb.GroupBy(p => p.EventDate.Date).Select(r=>new {
+            var grouped = pickerActivitiesDb.GroupBy(p => p.EventDate.Date).Select(r => new
+            {
                 Date = r.Key,
                 Count = r.Count()
-            }).OrderBy(r=>r.Date).ToList();
+            }).OrderBy(r => r.Date).ToList();
 
             return Json(grouped);
         }
 
-        public IActionResult _loadWellData(IList<int> ids) {
+        public IActionResult _loadWellData(IList<int> ids)
+        {
 
             var itemsDb = _pickingPersonRepository.ListByWells(ids);
 
-            // add role check
-
-            /*wellsDb.ToList().ForEach(x => x.Stages.ToList().ForEach(s=>s.PickingPersons.ToList().ForEach(p=> {
-                p.Picker = null;
-            })));*/
-
             var items = _mapper.Map<IList<PickingPersonItemModel>>(itemsDb);
-
+            if (!User.IsInRole("Administrator"))
+            {
+                items.ToList().ForEach(p => p.Picker = null);
+            }
 
             return Json(items);
         }

@@ -21,5 +21,10 @@ namespace status.dataaccess.Repositories
         {
             return  _context.Projects.Include(p => p.Wells).ThenInclude(x => x.Stages).ThenInclude(x=>x.PickingPersons).Where(p => p.UserId == userId).SingleOrDefault();
         }
+
+        public IList<Project> ListAll()
+        {
+            return _context.Projects.OrderBy(p => p.Name).ToList();
+        }
     }
 }

@@ -8,5 +8,6 @@ namespace status.domain.Interfaces
     public interface IProjectRepository
     {
         Project GetByUserId(int userId);
+        IList<Project> ListAll();
     }
 }

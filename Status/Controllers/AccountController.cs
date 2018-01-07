@@ -43,7 +43,7 @@ namespace Status.Controllers
                     return View(model);
                 }
 
-                if (null == user.Project)
+                if (null == user.Project && "Administrator" != user.Role.Name)
                 {
                     model.NoProject = true;
                     return View(model);

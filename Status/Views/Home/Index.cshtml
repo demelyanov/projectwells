@@ -3,6 +3,28 @@
     ViewData["Title"] = "Home Page";
 }
 
+
+
+@if (User.IsInRole("Administrator"))
+{
+    <form method="post" action="/" id="proj-form">
+        @Html.HiddenFor(m => m.Project.Id, new { id="projid", name="id" })
+        <div class="row" style="margin-top: 20px;">
+            <div class="col-md-12 ">
+                <div class="col-md-4 pull-right">
+                    <select class="form-control" name="projects" id="project-sel" style="width: 340px;">
+                        @foreach (var project in Model.ProjectsList)
+                        {
+                            <option value="@project.Id">@project.Name</option>
+                        }
+                    </select>
+                </div>
+                <label class="control-label col-md-2 pull-right text-right" style="line-height: 32px;">Available projects</label>
+            </div>
+        </div>
+    </form>
+}
+
 <div class="row">
     <div class="col-md-12">
         <h2>Project: @Model.Project.Name</h2>
@@ -15,94 +37,96 @@
                aria-expanded="false" aria-controls="collapseWells"></i> Wells: @Model.Project.Wells.Count
         </h3>
     </div>
-    <div class="collapse" id="collapseWells">
-        <div class="well">
-            <ul class="list-group">
-                @foreach (var item in Model.Project.Wells.OrderBy(w => w.Name))
-                {
-                    <li class="list-group-item info-menu" role="button" data-toggle="collapse" href="#collapseStages@(item.Id)"
-                        aria-expanded="false" aria-controls="collapseStages@(item.Id)">
-                        <i class=" glyphicon glyphicon-menu-right well-item"></i> @item.Name <span class="badge">Stages: @item.Stages.Count</span>
+    <div class="col-md-12">
+        <div class="collapse" id="collapseWells">
+            <div class="well">
+                <ul class="list-group">
+                    @foreach (var item in Model.Project.Wells.OrderBy(w => w.Name))
+                    {
+                        <li class="list-group-item info-menu" role="button" data-toggle="collapse" href="#collapseStages@(item.Id)"
+                            aria-expanded="false" aria-controls="collapseStages@(item.Id)">
+                            <i class=" glyphicon glyphicon-menu-right well-item"></i> @item.Name <span class="badge">Stages: @item.Stages.Count</span>
 
-                        @{
+                            @{
 
-                            var wellFiles = (decimal)item.Stages.Sum(s => s.FilesCount);
-                            var pickingFiles = (decimal)item.Stages.Sum(s => s.PickingPersons.Count);
+                                var wellFiles = (decimal)item.Stages.Sum(s => s.FilesCount);
+                                var pickingFiles = (decimal)item.Stages.Sum(s => s.PickingPersons.Count);
 
-                        }
+                            }
 
-                        <span class="badge badge-percentage">@((pickingFiles * 100) / wellFiles)% complete</span>
+                            <span class="badge badge-percentage">@((pickingFiles * 100) / wellFiles)% complete</span>
 
-                        <div class="collapse" id="collapseStages@(item.Id)">
-                            <ul class="list-group">
-                                @foreach (var stage in item.Stages.OrderBy(s => s.Name))
-                                {
-                                    <li class="list-group-item list-group-item-info files-menu" stage-id="@stage.Id"
-                                        data-toggle="collapse" href="#collapseFiles@(stage.Id)" aria-expanded="false" aria-controls="collapseFiles@(stage.Id)">
-                                        <i class=" glyphicon glyphicon-menu-right stage-item"></i>
-                                        @stage.Name <span class="badge">Files: @stage.FilesCount</span>
+                            <div class="collapse" id="collapseStages@(item.Id)">
+                                <ul class="list-group">
+                                    @foreach (var stage in item.Stages.OrderBy(s => s.Name))
+                                    {
+                                        <li class="list-group-item list-group-item-info files-menu" stage-id="@stage.Id"
+                                            data-toggle="collapse" href="#collapseFiles@(stage.Id)" aria-expanded="false" aria-controls="collapseFiles@(stage.Id)">
+                                            <i class=" glyphicon glyphicon-menu-right stage-item"></i>
+                                            @stage.Name <span class="badge">Files: @stage.FilesCount</span>
 
-                                        <div class="collapse" id="collapseFiles@(stage.Id)">
-                                            <div class="row files-info">
-                                                <div class="col-md-12">
-                                                    <div class="col-md-3">Folder</div>
-                                                    <div class="col-md-3">Event</div>
-                                                    <div class="col-md-3">Date</div>
-                                                    @if (User.IsInRole("Administrator"))
+                                            <div class="collapse" id="collapseFiles@(stage.Id)">
+                                                <div class="row files-info">
+                                                    <div class="col-md-12">
+                                                        <div class="col-md-3">Folder</div>
+                                                        <div class="col-md-3">Event</div>
+                                                        <div class="col-md-3">Date</div>
+                                                        @if (User.IsInRole("Administrator"))
+                                                        {
+                                                            <div class="col-md-3">Picker</div>
+                                                        }
+                                                    </div>
+                                                    @if (0 != stage.PickingPersons.Where(p => p.CutEvent != null).Count())
                                                     {
-                                                        <div class="col-md-3">Picker</div>
+                                                        <div class="col-md-12 alert-success text-center">Cut Event</div>
+                                                        @foreach (var cutItem in stage.PickingPersons.Where(p => p.CutEvent != null).OrderByDescending(p => p.EventDate))
+                                                        {
+                                                            <div class="col-md-12">
+                                                                <div class="col-md-3">@cutItem.Folder</div>
+                                                                <div class="col-md-3">@cutItem.CutEvent</div>
+                                                                <div class="col-md-3">@cutItem.EventDate</div>
+                                                                <!-- div class="col-3"></div -->
+                                                            </div>
+                                                        }
                                                     }
+                                                    @if (0 != stage.PickingPersons.Where(p => p.PickedEvent != null).Count())
+                                                    {
+                                                        <div class="col-md-12 alert-warning text-center">Picked Event</div>
+                                                        @foreach (var pickedItem in stage.PickingPersons.Where(p => p.PickedEvent != null).OrderByDescending(p => p.EventDate))
+                                                        {
+                                                            <div class="col-md-12">
+                                                                <div class="col-md-3">@pickedItem.Folder</div>
+                                                                <div class="col-md-3">@pickedItem.PickedEvent</div>
+                                                                <div class="col-md-3">@pickedItem.EventDate</div>
+                                                                <!-- div class="col-3"></div -->
+                                                            </div>
+                                                        }
+                                                    }
+
+                                                    @if (0 != stage.PickingPersons.Where(p => p.DeletedEvent != null).Count())
+                                                    {
+                                                        <div class="col-md-12 alert-danger text-center">Deleted Event</div>
+                                                        @foreach (var deletedItem in stage.PickingPersons.Where(p => p.DeletedEvent != null).OrderByDescending(p => p.EventDate))
+                                                        {
+                                                            <div class="col-md-12">
+                                                                <div class="col-md-3">@deletedItem.Folder</div>
+                                                                <div class="col-md-3">@deletedItem.DeletedEvent</div>
+                                                                <div class="col-md-3">@deletedItem.EventDate</div>
+                                                                <!-- div class="col-3"></div -->
+                                                            </div>
+                                                        }
+                                                    }
+
                                                 </div>
-                                                @if (0 != stage.PickingPersons.Where(p => p.CutEvent != null).Count())
-                                                {
-                                                    <div class="col-md-12 alert-success text-center">Cut Event</div>
-                                                    @foreach (var cutItem in stage.PickingPersons.Where(p => p.CutEvent != null).OrderByDescending(p => p.EventDate))
-                                                    {
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-3">@cutItem.Folder</div>
-                                                            <div class="col-md-3">@cutItem.CutEvent</div>
-                                                            <div class="col-md-3">@cutItem.EventDate</div>
-                                                            <!-- div class="col-3"></div -->
-                                                        </div>
-                                                    }
-                                                }
-                                                @if (0 != stage.PickingPersons.Where(p => p.PickedEvent != null).Count())
-                                                {
-                                                    <div class="col-md-12 alert-warning text-center">Picked Event</div>
-                                                    @foreach (var pickedItem in stage.PickingPersons.Where(p => p.PickedEvent != null).OrderByDescending(p => p.EventDate))
-                                                    {
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-3">@pickedItem.Folder</div>
-                                                            <div class="col-md-3">@pickedItem.PickedEvent</div>
-                                                            <div class="col-md-3">@pickedItem.EventDate</div>
-                                                            <!-- div class="col-3"></div -->
-                                                        </div>
-                                                    }
-                                                }
-
-                                                @if (0 != stage.PickingPersons.Where(p => p.DeletedEvent != null).Count())
-                                                {
-                                                    <div class="col-md-12 alert-danger text-center">Deleted Event</div>
-                                                    @foreach (var deletedItem in stage.PickingPersons.Where(p => p.DeletedEvent != null).OrderByDescending(p => p.EventDate))
-                                                    {
-                                                        <div class="col-md-12">
-                                                            <div class="col-md-3">@deletedItem.Folder</div>
-                                                            <div class="col-md-3">@deletedItem.DeletedEvent</div>
-                                                            <div class="col-md-3">@deletedItem.EventDate</div>
-                                                            <!-- div class="col-3"></div -->
-                                                        </div>
-                                                    }
-                                                }
-
                                             </div>
-                                        </div>
-                                    </li>
-                                }
-                            </ul>
-                        </div>
-                    </li>
-                }
-            </ul>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
         </div>
     </div>
 </div>
@@ -112,7 +136,10 @@
         <div class="btn-group" role="group" aria-label="...">
             <button type="button" chart-panel="#p1panel" class="btn btn-default active">Pies</button>
             <button type="button" chart-panel="#p3panel" class="btn btn-default">Picking Stats</button>
-            <button type="button" chart-panel="#p2panel" class="btn btn-default">Picker Info</button>
+            @if (User.IsInRole("Administrator"))
+            {
+                <button type="button" chart-panel="#p2panel" class="btn btn-default">Picker Info</button>
+            }
         </div>
     </div>
 </div>
@@ -135,23 +162,37 @@
     </div>
 </div>
 
-<!-- p2. picker stat -->
-<div class="panel panel-default" id="p2panel" style="display: none;">
-    <div class="panel-heading">Picker Info</div>
-    <div class="panel-body">
-        <div class="row">
-            <div class="col-md-12">
-                <form onsubmit="return false;">
-                    <input id="pickerName" class="form-control" placeholder="picker name" />
-                </form>
-            </div>
-            <div class="col-md-12" id="chartPlaceholder" style="display: none;">
-                <div id="pickerChart" style="height:300px"></div>
+@if (User.IsInRole("Administrator"))
+{
+    <!-- p2. picker stat -->
+    <div class="panel panel-default" id="p2panel" style="display: none;">
+        <div class="panel-heading">Picker Info</div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <form onsubmit="return false;">
+
+                        <div class="form-group">
+                            <!-- div class="col-md-4" style="position: relative;">
+                                <input type="text" class="form-control" name="pickerdaterange" value="01/01/2015 - 01/31/2015" />
+                                <i class="glyphicon glyphicon-calendar fa fa-calendar calendar-botton"></i>
+                            </div -->
+
+                            <lable>Picker</lable>
+                            <input id="pickerName" class="form-control" placeholder="picker name" />
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-12" id="chartPlaceholder" style="display: none;">
+                    <div id="pickerChart" style="height:300px"></div>
+                </div>
+                <div class="alert alert-danger" id="pikerNotFound" style="display: none;">
+                    Picker not found.
+                </div>
             </div>
         </div>
     </div>
-</div>
-
+}
 
 <!-- p3 tableview -->
 
@@ -201,6 +242,27 @@
     <script>
 
         $(document).ready(function () {
+
+        @if (User.IsInRole("Administrator")){
+            <text>
+            $('#project-sel').select2();
+
+            $('#project-sel').val(@Model.Project.Id); 
+            $('#project-sel').trigger('change');
+
+            $('#project-sel').on('change.select2', function () {
+                $('#proj-form').submit();
+            });
+
+            $('input[name="pickerdaterange"]').daterangepicker({
+                "startDate": "01/01/2018",
+                "endDate": "01/07/2018"
+            }, function (start, end, label) {
+                console.log("New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')");
+            });
+
+            </text>
+        }
 
             $('#wells-menu').click(function () {
 
@@ -269,7 +331,8 @@
                                 radius: 3 / 5,
                                 formatter: function (label, series) {
                                     var percent = Math.round(series.percent);
-                                    return label;
+
+                                    return label + "<br>" + percent + "%";
                                 }
                             }
 
@@ -338,6 +401,7 @@
                 $('.btn-group > button').removeClass('active');
                 $('.panel.panel-default').hide();
                 var panelId = $(this).attr('chart-panel');
+                $(this).addClass('active');
                 $(panelId).show();
             });
         });
@@ -354,7 +418,9 @@
                     if (0 == result.length) {
                         console.log('not found');
                         $('#chartPlaceholder').hide();
+                        $('#pikerNotFound').show();
                     } else {
+                        $('#pikerNotFound').hide();
                         var pickerData = [];
                         $('#chartPlaceholder').show();
 
@@ -427,9 +493,7 @@
         }
 
         function gd(year, month, day) {
-            console.log('day in gd');
             console.log(day);
-
             return new Date(year, month, day).getTime();
         }
 
@@ -465,7 +529,6 @@
                 root.append(row);
 
             });
-            //root.append('<div class="row"><div>Yahooo</div></div>');
 
         }
 
