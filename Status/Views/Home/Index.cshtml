@@ -54,7 +54,7 @@
 
                             }
 
-                            <span class="badge badge-percentage">@((pickingFiles * 100) / wellFiles)% complete</span>
+                            <span class="badge badge-percentage">@(0 != wellFiles ? (pickingFiles * 100) / wellFiles : 0)% complete</span>
 
                             <div class="collapse" id="collapseStages@(item.Id)">
                                 <ul class="list-group">
